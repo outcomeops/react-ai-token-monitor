@@ -25,6 +25,7 @@ export function getTotalTokens(tokens: Record<string, number>): number {
   return Object.values(tokens).reduce((sum, v) => sum + v, 0);
 }
 
+/** Format a Date to YYYY-MM-DD in UTC to match server-side date extraction */
 export function toLocalDateStr(d: Date): string {
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 }
