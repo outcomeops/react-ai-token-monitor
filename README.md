@@ -4,15 +4,17 @@ A web-based dashboard for tracking Claude Code token usage and costs in real tim
 
 Built as a web alternative to [ai-token-monitor](https://github.com/soulduse/ai-token-monitor) (Tauri desktop app) for headless servers and remote development setups.
 
-| Overview |
-|:---:|
-| <img src="docs/screenshots/overview.png" width="600" /> |
-| Today's usage, 7-day chart, weekly/monthly totals, contribution heatmap |
+<p align="center">
+  <strong>Overview</strong><br/>
+  <img src="docs/screenshots/overview.png" width="600" /><br/>
+  <em>Today's usage, 7-day chart, weekly/monthly totals, contribution heatmap</em>
+</p>
 
-| Analytics |
-|:---:|
-| <img src="docs/screenshots/analytics.png" width="600" /> |
-| Full-year activity graph (2D/3D), 30-day trends, model breakdown, cache efficiency |
+<p align="center">
+  <strong>Analytics</strong><br/>
+  <img src="docs/screenshots/analytics.png" width="600" /><br/>
+  <em>Full-year activity graph (2D/3D), 30-day trends, model breakdown, cache efficiency</em>
+</p>
 
 ## Features
 
