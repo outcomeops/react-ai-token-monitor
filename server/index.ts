@@ -61,6 +61,16 @@ app.get("/api/events", (req, res) => {
   req.on("close", () => sseClients.delete(res));
 });
 
+app.get("/api/debug", (_req, res) => {
+  const now = new Date();
+  res.json({
+    serverTZ: process.env.TZ,
+    serverNow: now.toString(),
+    serverToday: `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`,
+    latestDates: getStats().daily.slice(-3).map(d => d.date),
+  });
+});
+
 app.post("/api/refresh", (_req, res) => {
   resetParser();
   invalidateCache();

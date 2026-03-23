@@ -189,29 +189,18 @@ export function DailyChart({ daily, days = 7 }: Props) {
         )}
       </div>
 
-      <div style={{
-        display: "flex",
-        justifyContent: "space-between",
-        marginTop: 4,
-        paddingLeft: yAxisWidth + barGap,
-        paddingRight: barGap,
-      }}>
+      <svg viewBox={`0 0 ${W} 14`} width="100%" height={14} style={{ display: "block", marginTop: 4 }}>
         {chartData.map((d, i) => {
-          if (days > 14 && i % Math.ceil(days / 7) !== 0) return <span key={i} />;
+          if (days > 14 && i % Math.ceil(days / 7) !== 0) return null;
           const dayLabel = new Date(d.date + "T00:00:00").toLocaleDateString("en", { weekday: "short" });
+          const x = yAxisWidth + barGap + i * (barWidth + barGap) + barWidth / 2;
           return (
-            <span key={i} style={{
-              fontSize: 8,
-              color: "var(--text-secondary)",
-              fontWeight: 600,
-              textAlign: "center",
-              flex: days <= 14 ? 1 : undefined,
-            }}>
+            <text key={i} x={x} y={10} textAnchor="middle" fontSize={9} fontWeight={600} fill="var(--text-secondary)">
               {days <= 7 ? dayLabel : formatDate(d.date)}
-            </span>
+            </text>
           );
         })}
-      </div>
+      </svg>
     </div>
   );
 }
