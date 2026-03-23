@@ -26,7 +26,10 @@ export function parseSessionLine(line: string): SessionEntry | null {
 
     const timestamp = value.timestamp;
     if (!timestamp) return null;
-    const date = timestamp.slice(0, 10);
+    // Convert to local time so dates match the user's browser timezone
+    // Set TZ env var on the server to match the user's timezone
+    const d = new Date(timestamp);
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
     const model: string = message.model;
     if (!model || model.startsWith("<") || model === "synthetic") return null;

@@ -66,6 +66,7 @@ Single Node.js process serving both the API and frontend:
 | Environment Variable | Default | Description |
 |---|---|---|
 | `PORT` | `3002` | API server port |
+| `TZ` | System default | Timezone for date grouping (e.g., `America/Los_Angeles`). Set this to match your browser's timezone if the server is in a different timezone. |
 
 ## Model Pricing
 
