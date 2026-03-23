@@ -1,0 +1,55 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ===== Dark Purple Theme ===== */
+:root {
+  --bg-primary: #1A1825;
+  --bg-card: #252336;
+  --text-primary: #EEEAF7;
+  --text-secondary: #a8a4bc;
+  --accent-purple: #7C5CFC;
+  --accent-pink: #FF8FA4;
+  --accent-mint: #5DD9A8;
+  --accent-orange: #FFB347;
+  --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.2);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+
+  --heat-0: #2A2740;
+  --heat-1: #3D3660;
+  --heat-2: #5A4590;
+  --heat-3: #7558C0;
+  --heat-4: #9B7AFF;
+
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, sans-serif;
+  color: var(--text-primary);
+  background: var(--bg-primary);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+  margin: 8px 0;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(139, 135, 160, 0.3);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(139, 135, 160, 0.5);
+}

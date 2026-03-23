@@ -1,0 +1,168 @@
+import { useState, useMemo } from "react";
+import type { DailyUsage } from "../lib/types";
+import { getTotalTokens, toLocalDateStr } from "../lib/format";
+import { HeatmapCell } from "./HeatmapCell";
+import { Tooltip } from "./Tooltip";
+
+interface Props {
+  daily: DailyUsage[];
+  weeks?: number;
+}
+
+const DEFAULT_WEEKS = 12;
+const DAYS = 7;
+const DAY_LABELS = ["Mon", "", "Wed", "", "Fri", "", "Sun"];
+const HEAT_COLORS = [
+  "var(--heat-0)", "var(--heat-1)", "var(--heat-2)", "var(--heat-3)", "var(--heat-4)",
+];
+
+function getHeatLevel(value: number, thresholds: number[]): number {
+  if (value === 0) return 0;
+  for (let i = thresholds.length - 1; i >= 0; i--) {
+    if (value >= thresholds[i]) return i + 1;
+  }
+  return 1;
+}
+
+export function Heatmap({ daily, weeks: WEEKS = DEFAULT_WEEKS }: Props) {
+  const [tooltip, setTooltip] = useState<{
+    date: string; tokens: number; cost: number; x: number; y: number;
+  } | null>(null);
+
+  const { grid, monthLabels, thresholds } = useMemo(() => {
+    const dateMap = new Map<string, DailyUsage>();
+    for (const d of daily) dateMap.set(d.date, d);
+
+    const today = new Date();
+    const todayDow = today.getDay();
+    const mondayDow = todayDow === 0 ? 6 : todayDow - 1;
+    const endOfWeek = new Date(today);
+    endOfWeek.setDate(today.getDate() + (6 - mondayDow));
+
+    const startDate = new Date(endOfWeek);
+    startDate.setDate(endOfWeek.getDate() - WEEKS * 7 + 1);
+
+    const cells: { date: string; tokens: number; cost: number }[] = [];
+    const values: number[] = [];
+    const months = new Map<number, string>();
+
+    for (let i = 0; i < WEEKS * DAYS; i++) {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
+      const dateStr = d.toISOString().slice(0, 10);
+      const usage = dateMap.get(dateStr);
+      const tokens = usage ? getTotalTokens(usage.tokens) : 0;
+      const cost = usage?.cost_usd ?? 0;
+      cells.push({ date: dateStr, tokens, cost });
+      if (tokens > 0) values.push(tokens);
+
+      const weekIdx = Math.floor(i / DAYS);
+      const dayIdx = i % DAYS;
+      if (dayIdx === 0 && d.getDate() <= 7) {
+        months.set(weekIdx, d.toLocaleDateString("en", { month: "short" }));
+      }
+    }
+
+    values.sort((a, b) => a - b);
+    const quantiles = [0.25, 0.5, 0.75, 0.9];
+    const thresholds = quantiles.map((q) => values[Math.floor(q * values.length)] || 0);
+
+    type Cell = { date: string; tokens: number; cost: number };
+    const grid: Cell[][] = Array.from({ length: DAYS }, () => []);
+    for (let col = 0; col < WEEKS; col++) {
+      for (let row = 0; row < DAYS; row++) {
+        grid[row].push(cells[col * DAYS + row]);
+      }
+    }
+
+    const monthLabels: { col: number; label: string }[] = [];
+    for (const [col, label] of months.entries()) {
+      monthLabels.push({ col, label });
+    }
+
+    return { grid, monthLabels, thresholds };
+  }, [daily, WEEKS]);
+
+  return (
+    <div style={{
+      background: "var(--bg-card)",
+      borderRadius: "var(--radius-lg)",
+      padding: 20,
+      boxShadow: "var(--shadow-card)",
+    }}>
+      <div style={{
+        fontSize: 13, fontWeight: 700, color: "var(--text-secondary)",
+        textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12,
+      }}>
+        Last {WEEKS} Weeks
+      </div>
+
+      <div style={{ display: "flex", marginLeft: 28, marginBottom: 4 }}>
+        {Array.from({ length: WEEKS }).map((_, col) => {
+          const label = monthLabels.find((m) => m.col === col);
+          return (
+            <div key={col} style={{ width: 18, fontSize: 9, color: "var(--text-secondary)", fontWeight: 600 }}>
+              {label?.label ?? ""}
+            </div>
+          );
+        })}
+      </div>
+
+      <div style={{ display: "flex", gap: 0 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, marginRight: 4 }}>
+          {DAY_LABELS.map((label, i) => (
+            <div key={i} style={{
+              height: 14, fontSize: 9, color: "var(--text-secondary)", fontWeight: 600,
+              display: "flex", alignItems: "center", width: 24, justifyContent: "flex-end",
+            }}>
+              {label}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+          {(() => {
+            const todayStr = toLocalDateStr(new Date());
+            return grid.map((row, rowIdx) => (
+              <div key={rowIdx} style={{ display: "flex", gap: 4 }}>
+                {row.map((cell, colIdx) => {
+                  const level = getHeatLevel(cell.tokens, thresholds);
+                  return (
+                    <HeatmapCell
+                      key={`${rowIdx}-${colIdx}`}
+                      color={HEAT_COLORS[level]}
+                      isToday={cell.date === todayStr}
+                      onMouseEnter={(e) => {
+                        const rect = e.currentTarget.getBoundingClientRect();
+                        setTooltip({
+                          date: cell.date, tokens: cell.tokens, cost: cell.cost,
+                          x: rect.left + rect.width / 2, y: rect.top,
+                        });
+                      }}
+                      onMouseLeave={() => setTooltip(null)}
+                    />
+                  );
+                })}
+              </div>
+            ));
+          })()}
+        </div>
+      </div>
+
+      <div style={{
+        display: "flex", alignItems: "center", gap: 4,
+        marginTop: 10, justifyContent: "flex-end",
+      }}>
+        <span style={{ fontSize: 9, color: "var(--text-secondary)", marginRight: 4 }}>Less</span>
+        {HEAT_COLORS.map((color, i) => (
+          <div key={i} style={{ width: 10, height: 10, borderRadius: 2, background: color }} />
+        ))}
+        <span style={{ fontSize: 9, color: "var(--text-secondary)", marginLeft: 4 }}>More</span>
+      </div>
+
+      {tooltip && (
+        <Tooltip date={tooltip.date} tokens={tooltip.tokens} cost={tooltip.cost} x={tooltip.x} y={tooltip.y} visible />
+      )}
+    </div>
+  );
+}
