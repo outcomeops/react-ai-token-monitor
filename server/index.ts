@@ -72,7 +72,7 @@ app.post("/api/refresh", (_req, res) => {
 const distDir = join(__dirname, "..", "dist");
 if (existsSync(distDir)) {
   app.use(express.static(distDir));
-  app.get("*", (_req, res) => {
+  app.get("/{*splat}", (_req, res) => {
     res.sendFile(join(distDir, "index.html"));
   });
 }
