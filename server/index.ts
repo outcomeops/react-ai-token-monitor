@@ -13,26 +13,16 @@ const PORT = Number(process.env.PORT) || 3002;
 
 const app = express();
 
-// --- Stats cache ---
-let cachedStats: AllStats | null = null;
-
+// --- Stats ---
 function getStats(): AllStats {
-  if (!cachedStats) {
-    const entries = getEntries();
-    cachedStats = aggregateEntries(entries);
-  }
-  return cachedStats;
-}
-
-function invalidateCache(): void {
-  cachedStats = null;
+  const entries = getEntries();
+  return aggregateEntries(entries);
 }
 
 // --- SSE connections ---
 const sseClients = new Set<Response>();
 
 onStatsChange(() => {
-  invalidateCache();
   // Push to all SSE clients
   for (const res of sseClients) {
     res.write(`data: stats-updated\n\n`);
@@ -73,7 +63,6 @@ app.get("/api/debug", (_req, res) => {
 
 app.post("/api/refresh", (_req, res) => {
   resetParser();
-  invalidateCache();
   const stats = getStats();
   res.json(stats);
 });
