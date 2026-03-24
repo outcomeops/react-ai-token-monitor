@@ -13,6 +13,9 @@ const PORT = Number(process.env.PORT) || 3002;
 
 const app = express();
 
+// Disable ETag so browsers never cache API responses as 304
+app.set("etag", false);
+
 // --- Stats ---
 function getStats(): AllStats {
   const entries = getEntries();
