@@ -1,4 +1,4 @@
-import { readFileSync, statSync } from "fs";
+import { readFileSync, statSync, openSync, readSync, closeSync } from "fs";
 import { globSync } from "glob";
 import { homedir } from "os";
 import { join } from "path";
@@ -73,10 +73,17 @@ export function parseAllFiles(): Map<string, SessionEntry> {
     if (startOffset >= fileSize) continue;
 
     try {
-      const content = readFileSync(filePath, "utf-8");
-      // Skip to the offset position by counting bytes
-      const sliced = startOffset > 0 ? content.slice(startOffset) : content;
-      const lines = sliced.split("\n");
+      // Read only the new bytes from the file using byte offsets
+      const bytesToRead = fileSize - startOffset;
+      const buffer = Buffer.alloc(bytesToRead);
+      const fd = openSync(filePath, "r");
+      try {
+        readSync(fd, buffer, 0, bytesToRead, startOffset);
+      } finally {
+        closeSync(fd);
+      }
+      const content = buffer.toString("utf-8");
+      const lines = content.split("\n");
 
       for (const line of lines) {
         if (!line.trim()) continue;
